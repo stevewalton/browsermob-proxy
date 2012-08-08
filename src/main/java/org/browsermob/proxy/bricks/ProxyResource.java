@@ -158,6 +158,37 @@ public class ProxyResource extends BaseBrick {
         return this.wrapEmptySuccess();
     }
 
+    @Delete
+    @At("/:port/headers")
+    public Reply<?> removeAllHeaders(@Named("port") int port, Request request) {
+        LOG.info("DELETE /proxy/%s/headers", port);
+
+        ProxyServer proxy = proxyManager.get(port);
+        proxy.removeAllHeaders();
+
+        return this.wrapEmptySuccess();
+    }
+
+    @Get
+    @At("/:port/header/:name")
+    public Reply<?> getHeader(@Named("port") int port, @Named("name") String name, Request request) {
+        LOG.info("GET /proxy/%s/header/%s", port, name);
+
+        ProxyServer proxy = proxyManager.get(port);
+        return this.wrapSuccess(proxy.getHeader(name));
+    }
+
+    @Delete
+    @At("/:port/header/:name")
+    public Reply<?> removeHeader(@Named("port") int port, @Named("name") String name, Request request) {
+        LOG.info("DELETE /proxy/%s/header/%s", port, name);
+
+        ProxyServer proxy = proxyManager.get(port);
+        proxy.removeHeader(name);
+
+        return this.wrapEmptySuccess();
+    }
+
     @Put
     @At("/:port/limit")
     public Reply<?> limit(@Named("port") int port, Request request) {
