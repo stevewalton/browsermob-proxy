@@ -35,7 +35,8 @@ public class ProxyConfig extends BaseBrick {
         }
 
         Boolean enhancedReplies = Boolean.parseBoolean(rawParam);
-        
+
+        LOG.info("rawParam is " + rawParam);
         LOG.info("enhancedReplies is " + enhancedReplies);
         restConfig.setEnhancedReplies(enhancedReplies);
 
