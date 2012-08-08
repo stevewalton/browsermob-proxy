@@ -111,4 +111,12 @@ public class BaseBrick {
     protected boolean getEnhancedReplies() {
         return restConfig.getEnhancedReplies();
     }
+
+    protected void logParam(String name, Object param) {
+        if (!restConfig.getParamLogs()) {
+            return;
+        }
+
+        LOG.info("  PARAM: %s = %s", name, param);
+    }
 }
