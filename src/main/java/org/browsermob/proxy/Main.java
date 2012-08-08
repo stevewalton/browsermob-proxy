@@ -4,16 +4,16 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.servlet.GuiceServletContextListener;
 import com.google.sitebricks.SitebricksModule;
+import java.io.InputStream;
+import java.util.Properties;
+import javax.servlet.ServletContextEvent;
+import org.browsermob.proxy.bricks.ProxyConfig;
 import org.browsermob.proxy.bricks.ProxyResource;
 import org.browsermob.proxy.guice.ConfigModule;
 import org.browsermob.proxy.guice.JettyModule;
 import org.browsermob.proxy.util.Log;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
-
-import javax.servlet.ServletContextEvent;
-import java.io.InputStream;
-import java.util.Properties;
 
 public class Main {
     private static final Log LOG = new Log();
@@ -33,6 +33,7 @@ public class Main {
             @Override
             protected void configureSitebricks() {
                 scan(ProxyResource.class.getPackage());
+                scan(ProxyConfig.class.getPackage());
             }
         });
 
