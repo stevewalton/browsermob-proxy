@@ -11,25 +11,26 @@ import com.google.sitebricks.http.Delete;
 import com.google.sitebricks.http.Get;
 import com.google.sitebricks.http.Post;
 import com.google.sitebricks.http.Put;
+import java.util.Hashtable;
+import java.util.Map;
 import org.browsermob.core.har.Har;
 import org.browsermob.proxy.ProxyManager;
 import org.browsermob.proxy.ProxyServer;
 
-import java.util.Hashtable;
-import java.util.Map;
-
 @At("/proxy")
 @Service
-public class ProxyResource {
+public class ProxyResource extends BaseBrick {
     private ProxyManager proxyManager;
-
+    
     @Inject
     public ProxyResource(ProxyManager proxyManager) {
         this.proxyManager = proxyManager;
     }
 
     @Post
-    public Reply<ProxyDescriptor> newProxy(Request request) throws Exception {
+    public Reply<?> newProxy(Request request) throws Exception {
+        LOG.info("POST /proxy");
+
         String httpProxy = request.param("httpProxy");
         Hashtable<String, String> options = new Hashtable<String, String>();
 
@@ -46,21 +47,32 @@ public class ProxyResource {
             ProxyServer proxy = proxyManager.create(options);
             port = proxy.getPort();
         }
-        return Reply.with(new ProxyDescriptor(port)).as(Json.class);
+
+        return this.wrapSuccess(new ProxyDescriptor(port));
     }
 
     @Get
+    public Reply<?> hello() {
+        return Reply.with("hello there!");
+    }
+
+
+    @Get
     @At("/:port/har")
-    public Reply<Har> getHar(@Named("port") int port) {
+    public Reply<?> getHar(@Named("port") int port) {
+        LOG.info("GET /proxy/:port/har");
+        
         ProxyServer proxy = proxyManager.get(port);
         Har har = proxy.getHar();
 
-        return Reply.with(har).as(Json.class);
+        return this.wrapSuccess(har);
     }
 
     @Put
     @At("/:port/har")
     public Reply<?> newHar(@Named("port") int port, Request request) {
+        LOG.info("PUT /proxy/:port/har");
+        
         String initialPageRef = request.param("initialPageRef");
         ProxyServer proxy = proxyManager.get(port);
         Har oldHar = proxy.newHar(initialPageRef);
@@ -71,47 +83,55 @@ public class ProxyResource {
         proxy.setCaptureContent(Boolean.parseBoolean(captureContent));
 
         if (oldHar != null) {
-            return Reply.with(oldHar).as(Json.class);
+            return this.wrapSuccess(oldHar);
         } else {
-            return Reply.saying().noContent();
+            return this.wrapEmptySuccess();
         }
     }
 
     @Put
     @At("/:port/har/pageRef")
     public Reply<?> setPage(@Named("port") int port, Request request) {
+        LOG.info("PUT /proxy/:port/har/pageRef");
+
         String pageRef = request.param("pageRef");
         ProxyServer proxy = proxyManager.get(port);
         proxy.newPage(pageRef);
 
-        return Reply.saying().ok();
+        return this.wrapEmptySuccess();
     }
 
     @Put
     @At("/:port/blacklist")
     public Reply<?> blacklist(@Named("port") int port, Request request) {
+        LOG.info("PUT /proxy/:port/blacklist");
+        
         String blacklist = request.param("regex");
         int responseCode = parseResponseCode(request.param("status"));
         ProxyServer proxy = proxyManager.get(port);
         proxy.blacklistRequests(blacklist, responseCode);
 
-        return Reply.saying().ok();
+        return this.wrapEmptySuccess();
     }
 
     @Put
     @At("/:port/whitelist")
     public Reply<?> whitelist(@Named("port") int port, Request request) {
+        LOG.info("PUT /proxy/:port/whitelist");
+
         String regex = request.param("regex");
         int responseCode = parseResponseCode(request.param("status"));
         ProxyServer proxy = proxyManager.get(port);
         proxy.whitelistRequests(regex.split(","), responseCode);
 
-        return Reply.saying().ok();
+        return this.wrapEmptySuccess();
     }
 
     @Post
     @At("/:port/headers")
     public Reply<?> updateHeaders(@Named("port") int port, Request request) {
+        LOG.info("POST /proxy/:port/headers");
+
         ProxyServer proxy = proxyManager.get(port);
         Map<String, String> headers = request.read(Map.class).as(Json.class);
         for (Map.Entry<String, String> entry : headers.entrySet()) {
@@ -119,12 +139,15 @@ public class ProxyResource {
             String value = entry.getValue();
             proxy.addHeader(key, value);
         }
-        return Reply.saying().ok();
+
+        return this.wrapEmptySuccess();
     }
 
     @Put
     @At("/:port/limit")
     public Reply<?> limit(@Named("port") int port, Request request) {
+        LOG.info("PUT /proxy/:port/limit");
+        
         ProxyServer proxy = proxyManager.get(port);
         String upstreamKbps = request.param("upstreamKbps");
         if (upstreamKbps != null) {
@@ -144,19 +167,25 @@ public class ProxyResource {
                 proxy.setLatency(Integer.parseInt(latency));
             } catch (NumberFormatException e) { }
         }
-        return Reply.saying().ok();
+
+        return this.wrapEmptySuccess();
     }
 
     @Delete
     @At("/:port")
     public Reply<?> delete(@Named("port") int port) throws Exception {
+        LOG.info("DELETE /proxy/:port");
+
         proxyManager.delete(port);
-        return Reply.saying().ok();
+
+        return this.wrapEmptySuccess();
     }
 
     @Post
     @At("/:port/hosts")
     public Reply<?> remapHosts(@Named("port") int port, Request request) {
+        LOG.info("POST /proxy/:port/hosts");
+        
         ProxyServer proxy = proxyManager.get(port);
         @SuppressWarnings("unchecked") Map<String, String> headers = request.read(Map.class).as(Json.class);
 
@@ -168,9 +197,8 @@ public class ProxyResource {
             proxy.clearDNSCache();
         }
 
-        return Reply.saying().ok();
+        return this.wrapEmptySuccess();
     }
-
 
     private int parseResponseCode(String response)
     {
