@@ -870,6 +870,28 @@ public class BrowserMobHttpClient {
         additionalHeaders.put(name, value);
     }
 
+    public void removeHeader(String name) {
+        if (additionalHeaders.containsKey(name)) {
+            additionalHeaders.remove(name);
+        }
+    }
+
+    public void removeAllHeaders() {
+        // remove all references to the data inside the old HashMap
+        additionalHeaders.clear();
+        
+        // free up the old HashMap for garbage collection
+        additionalHeaders = new HashMap();
+    }
+
+    public String getHeader(String name) {
+        if (additionalHeaders.containsKey(name)) {
+            return additionalHeaders.get(name);
+        }
+
+        return null;
+    }
+
     public void prepareForBrowser() {
     	//save request and reponse cookies to the context
     	httpClient.addRequestInterceptor(new RequestCookiesInterceptor());

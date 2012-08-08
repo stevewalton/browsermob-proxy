@@ -189,6 +189,18 @@ public class ProxyServer {
         client.addHeader(name, value);
     }
 
+    public void removeHeader(String name) {
+        client.removeHeader(name);
+    }
+    
+    public void removeAllHeaders() {
+        client.removeAllHeaders();
+    }
+
+    public String getHeader(String name) {
+        return client.getHeader(name);
+    }
+
     public void setCaptureHeaders(boolean captureHeaders) {
         client.setCaptureHeaders(captureHeaders);
     }
