@@ -1,17 +1,14 @@
 package org.browsermob.proxy.bricks;
 
-/**
- *
- * @author stuart
- */
-public class RestConfig {
+public class FeatureFlags {
     private boolean enhancedReplies = false;
     private boolean paramLogs = false;
+    private boolean headerGetDelete = true;
 
     /**
      * private constructor
      */
-    private RestConfig() {
+    private FeatureFlags() {
 
     }
 
@@ -23,6 +20,10 @@ public class RestConfig {
         this.enhancedReplies = enhancedReplies;
     }
 
+    public boolean getHeaderGetDelete() {
+        return this.headerGetDelete;
+    }
+
     public boolean getParamLogs() {
         return this.paramLogs;
     }
@@ -31,11 +32,11 @@ public class RestConfig {
         this.paramLogs = paramLogs;
     }
 
-    public static RestConfig getInstance() {
-        RestConfig instance = null;
+    public static FeatureFlags getInstance() {
+        FeatureFlags instance = null;
         
         if (instance == null) {
-            instance = new RestConfig();
+            instance = new FeatureFlags();
         }
 
         return instance;

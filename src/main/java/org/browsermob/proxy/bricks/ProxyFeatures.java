@@ -4,19 +4,20 @@ import com.google.sitebricks.At;
 import com.google.sitebricks.headless.Reply;
 import com.google.sitebricks.headless.Request;
 import com.google.sitebricks.headless.Service;
+import com.google.sitebricks.http.Delete;
 import com.google.sitebricks.http.Get;
 import com.google.sitebricks.http.Post;
 
-@At("/config")
+@At("/features")
 @Service
-public class ProxyConfig extends BaseBrick {
+public class ProxyFeatures extends BaseBrick {
 
     @Get
-    public Reply<?> getConfig() {
-        LOG.info("GET /config");
+    public Reply<?> getFeatures() {
+        LOG.info("GET /features");
 
         try {
-            return(this.wrapSuccess(restConfig));
+            return(this.wrapSuccess(featureFlags));
         }
         catch (Exception e) {
             return this.wrapError(e);
@@ -26,7 +27,7 @@ public class ProxyConfig extends BaseBrick {
     @Post
     @At("/enhancedReplies")
     public Reply<?> setEnhancedReplies(Request request) {
-        LOG.info("POST /config/enhancedreplies");
+        LOG.info("POST /features/enhancedreplies");
 
         String rawParam = request.param("enhancedReplies");
         if (rawParam == null)
@@ -39,15 +40,25 @@ public class ProxyConfig extends BaseBrick {
         this.logParam("rawParam", rawParam);
         this.logParam("enhancedReplies", enhancedReplies);
 
-        restConfig.setEnhancedReplies(enhancedReplies);
+        featureFlags.setEnhancedReplies(enhancedReplies);
 
+        return this.wrapEmptySuccess();
+    }
+
+    @Delete
+    @At("/enhancedReplies")
+    public Reply<?> deleteEnhancedReplies() {
+        LOG.info("DELETE /features/enhancedReplies");
+        
+        featureFlags.setEnhancedReplies(false);
+        
         return this.wrapEmptySuccess();
     }
 
     @Post
     @At("/paramLogs")
     public Reply<?> setParamLogs(Request request) {
-        LOG.info("POST /config/paramLogs");
+        LOG.info("POST /features/paramLogs");
 
         String rawParam = request.param("paramLogs");
         if (rawParam == null)
@@ -60,7 +71,17 @@ public class ProxyConfig extends BaseBrick {
         this.logParam("rawParam", rawParam);
         this.logParam("paramLogs", paramLogs);
 
-        restConfig.setParamLogs(paramLogs);
+        featureFlags.setParamLogs(paramLogs);
+
+        return this.wrapEmptySuccess();
+    }
+
+    @Delete
+    @At("/paramLogs")
+    public Reply<?> deleteParamLogs() {
+        LOG.info("DELETE /features/paramLogs");
+
+        featureFlags.setParamLogs(false);
 
         return this.wrapEmptySuccess();
     }

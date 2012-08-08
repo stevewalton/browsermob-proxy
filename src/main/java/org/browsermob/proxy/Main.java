@@ -7,7 +7,7 @@ import com.google.sitebricks.SitebricksModule;
 import java.io.InputStream;
 import java.util.Properties;
 import javax.servlet.ServletContextEvent;
-import org.browsermob.proxy.bricks.ProxyConfig;
+import org.browsermob.proxy.bricks.ProxyFeatures;
 import org.browsermob.proxy.bricks.ProxyResource;
 import org.browsermob.proxy.guice.ConfigModule;
 import org.browsermob.proxy.guice.JettyModule;
@@ -33,7 +33,7 @@ public class Main {
             @Override
             protected void configureSitebricks() {
                 scan(ProxyResource.class.getPackage());
-                scan(ProxyConfig.class.getPackage());
+                scan(ProxyFeatures.class.getPackage());
             }
         });
 

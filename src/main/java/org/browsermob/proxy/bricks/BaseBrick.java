@@ -25,7 +25,7 @@ import org.browsermob.proxy.util.Log;
  */
 public class BaseBrick {
 
-    protected static RestConfig restConfig = RestConfig.getInstance();
+    protected static FeatureFlags featureFlags = FeatureFlags.getInstance();
 
     protected static final Log LOG = new Log();
 
@@ -109,11 +109,11 @@ public class BaseBrick {
     }
 
     protected boolean getEnhancedReplies() {
-        return restConfig.getEnhancedReplies();
+        return featureFlags.getEnhancedReplies();
     }
 
     protected void logParam(String name, Object param) {
-        if (!restConfig.getParamLogs()) {
+        if (!featureFlags.getParamLogs()) {
             return;
         }
 
