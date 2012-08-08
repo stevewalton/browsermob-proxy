@@ -36,8 +36,9 @@ public class ProxyConfig extends BaseBrick {
 
         Boolean enhancedReplies = Boolean.parseBoolean(rawParam);
 
-        LOG.info("rawParam is " + rawParam);
-        LOG.info("enhancedReplies is " + enhancedReplies);
+        this.logParam("rawParam", rawParam);
+        this.logParam("enhancedReplies", enhancedReplies);
+
         restConfig.setEnhancedReplies(enhancedReplies);
 
         return this.wrapEmptySuccess();
@@ -56,8 +57,9 @@ public class ProxyConfig extends BaseBrick {
 
         Boolean paramLogs = Boolean.parseBoolean(rawParam);
 
-        LOG.info("rawParam is " + rawParam);
-        LOG.info("paramLogs is " + paramLogs);
+        this.logParam("rawParam", rawParam);
+        this.logParam("paramLogs", paramLogs);
+
         restConfig.setParamLogs(paramLogs);
 
         return this.wrapEmptySuccess();

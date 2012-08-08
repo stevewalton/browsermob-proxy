@@ -32,13 +32,16 @@ public class ProxyResource extends BaseBrick {
         LOG.info("POST /proxy");
 
         String httpProxy = request.param("httpProxy");
-        Hashtable<String, String> options = new Hashtable<String, String>();
+        this.logParam("httpProxy", httpProxy);
 
+        Hashtable<String, String> options = new Hashtable<String, String>();
         if (httpProxy != null) {
             options.put("httpProxy", httpProxy);
         }
 
         String paramPort = request.param("port");
+        this.logParam("port", paramPort);
+        
         int port = 0;
         if (paramPort != null) {
             port = Integer.parseInt(paramPort);
@@ -50,12 +53,6 @@ public class ProxyResource extends BaseBrick {
 
         return this.wrapSuccess(new ProxyDescriptor(port));
     }
-
-    @Get
-    public Reply<?> hello() {
-        return Reply.with("hello there!");
-    }
-
 
     @Get
     @At("/:port/har")
@@ -74,12 +71,16 @@ public class ProxyResource extends BaseBrick {
         LOG.info("PUT /proxy/:port/har");
         
         String initialPageRef = request.param("initialPageRef");
+        this.logParam("initialPageRef", initialPageRef);
         ProxyServer proxy = proxyManager.get(port);
         Har oldHar = proxy.newHar(initialPageRef);
 
         String captureHeaders = request.param("captureHeaders");
-        String captureContent = request.param("captureContent");
+        this.logParam("captureHeaders", captureHeaders);
         proxy.setCaptureHeaders(Boolean.parseBoolean(captureHeaders));
+
+        String captureContent = request.param("captureContent");
+        this.logParam("captureContent", captureContent);
         proxy.setCaptureContent(Boolean.parseBoolean(captureContent));
 
         if (oldHar != null) {
@@ -95,6 +96,8 @@ public class ProxyResource extends BaseBrick {
         LOG.info("PUT /proxy/:port/har/pageRef");
 
         String pageRef = request.param("pageRef");
+        this.logParam("pageRef", pageRef);
+        
         ProxyServer proxy = proxyManager.get(port);
         proxy.newPage(pageRef);
 
@@ -106,10 +109,15 @@ public class ProxyResource extends BaseBrick {
     public Reply<?> blacklist(@Named("port") int port, Request request) {
         LOG.info("PUT /proxy/:port/blacklist");
         
-        String blacklist = request.param("regex");
+        String regex = request.param("regex");
+        this.logParam("regex", regex);
+
+        this.logParam("status", request.param("status"));
         int responseCode = parseResponseCode(request.param("status"));
+        this.logParam("responseCode", responseCode);
+
         ProxyServer proxy = proxyManager.get(port);
-        proxy.blacklistRequests(blacklist, responseCode);
+        proxy.blacklistRequests(regex, responseCode);
 
         return this.wrapEmptySuccess();
     }
@@ -120,7 +128,12 @@ public class ProxyResource extends BaseBrick {
         LOG.info("PUT /proxy/:port/whitelist");
 
         String regex = request.param("regex");
+        this.logParam("regex", regex);
+
+        this.logParam("status", request.param("status"));
         int responseCode = parseResponseCode(request.param("status"));
+        this.logParam("responseCode", responseCode);
+        
         ProxyServer proxy = proxyManager.get(port);
         proxy.whitelistRequests(regex.split(","), responseCode);
 
@@ -137,6 +150,8 @@ public class ProxyResource extends BaseBrick {
         for (Map.Entry<String, String> entry : headers.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
+            this.logParam("HEADER NAME ", key);
+            this.logParam("HEADER VALUE", value);
             proxy.addHeader(key, value);
         }
 
@@ -150,18 +165,21 @@ public class ProxyResource extends BaseBrick {
         
         ProxyServer proxy = proxyManager.get(port);
         String upstreamKbps = request.param("upstreamKbps");
+        this.logParam("upstreamKbps", upstreamKbps);
         if (upstreamKbps != null) {
             try {
                 proxy.setUpstreamKbps(Integer.parseInt(upstreamKbps));
             } catch (NumberFormatException e) { }
         }
         String downstreamKbps = request.param("downstreamKbps");
+        this.logParam("downstreamKbps", downstreamKbps);
         if (downstreamKbps != null) {
             try {
                 proxy.setDownstreamKbps(Integer.parseInt(downstreamKbps));
             } catch (NumberFormatException e) { }
         }
         String latency = request.param("latency");
+        this.logParam("latency", latency);
         if (latency != null) {
             try {
                 proxy.setLatency(Integer.parseInt(latency));
@@ -192,6 +210,8 @@ public class ProxyResource extends BaseBrick {
         for (Map.Entry<String, String> entry : headers.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
+            this.logParam("HOST NAME ", key);
+            this.logParam("HOST VALUE", value);
             proxy.remapHost(key, value);
             proxy.setDNSCacheTimeout(0);
             proxy.clearDNSCache();
