@@ -6,6 +6,7 @@ package org.browsermob.proxy.bricks;
  */
 public class RestConfig {
     private boolean enhancedReplies = false;
+    private boolean paramLogs = false;
 
     /**
      * private constructor
@@ -20,6 +21,14 @@ public class RestConfig {
 
     public void setEnhancedReplies(boolean enhancedReplies) {
         this.enhancedReplies = enhancedReplies;
+    }
+
+    public boolean getParamLogs() {
+        return this.paramLogs;
+    }
+
+    public void setParamLogs(boolean paramLogs) {
+        this.paramLogs = paramLogs;
     }
 
     public static RestConfig getInstance() {

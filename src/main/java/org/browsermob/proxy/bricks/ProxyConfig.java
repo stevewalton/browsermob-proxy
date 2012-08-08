@@ -31,7 +31,7 @@ public class ProxyConfig extends BaseBrick {
         String rawParam = request.param("enhancedReplies");
         if (rawParam == null)
         {
-            this.wrapError("Missing param enhancedReplies");
+            return this.wrapError("Missing param enhancedReplies");
         }
 
         Boolean enhancedReplies = Boolean.parseBoolean(rawParam);
@@ -39,6 +39,26 @@ public class ProxyConfig extends BaseBrick {
         LOG.info("rawParam is " + rawParam);
         LOG.info("enhancedReplies is " + enhancedReplies);
         restConfig.setEnhancedReplies(enhancedReplies);
+
+        return this.wrapEmptySuccess();
+    }
+
+    @Post
+    @At("/paramLogs")
+    public Reply<?> setParamLogs(Request request) {
+        LOG.info("POST /config/paramLogs");
+
+        String rawParam = request.param("paramLogs");
+        if (rawParam == null)
+        {
+            return this.wrapError("Missing param paramLogs");
+        }
+
+        Boolean paramLogs = Boolean.parseBoolean(rawParam);
+
+        LOG.info("rawParam is " + rawParam);
+        LOG.info("paramLogs is " + paramLogs);
+        restConfig.setParamLogs(paramLogs);
 
         return this.wrapEmptySuccess();
     }
