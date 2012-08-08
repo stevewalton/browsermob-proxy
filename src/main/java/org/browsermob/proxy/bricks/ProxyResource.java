@@ -251,6 +251,33 @@ public class ProxyResource extends BaseBrick {
         return this.wrapEmptySuccess();
     }
 
+    @Put
+    @At("/:port/basicAuth/:domain")
+    public Reply<?> putHttpBasicAuth(@Named("port") int port, @Named("domain") String domain, Request request)
+    {
+        LOG.info("PUT /proxy/%s/basicAuth/%s", port, domain);
+
+        ProxyServer proxy = proxyManager.get(port);
+
+        String username = request.param("username");
+        this.logParam("username", username);
+        if (username == null)
+        {
+            return this.wrapError("Missing param 'username'");
+        }
+
+        String password = request.param("password");
+        this.logParam("password", password);
+        if (password == null)
+        {
+            return this.wrapError("Missing param 'password'");
+        }
+
+        proxy.autoBasicAuthorization(domain, username, password);
+
+        return this.wrapEmptySuccess();
+    }
+
     private int parseResponseCode(String response)
     {
         int responseCode = 200;

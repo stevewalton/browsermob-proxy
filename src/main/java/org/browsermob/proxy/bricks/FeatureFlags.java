@@ -4,6 +4,7 @@ public class FeatureFlags {
     private boolean enhancedReplies = false;
     private boolean paramLogs = false;
     private boolean headerGetDelete = true;
+    private boolean httpBasicAuth = true;
 
     /**
      * private constructor
@@ -22,6 +23,10 @@ public class FeatureFlags {
 
     public boolean getHeaderGetDelete() {
         return this.headerGetDelete;
+    }
+
+    public boolean getHttpBasicAuth() {
+        return this.httpBasicAuth;
     }
 
     public boolean getParamLogs() {
