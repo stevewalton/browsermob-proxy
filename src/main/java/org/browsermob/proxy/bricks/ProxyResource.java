@@ -31,62 +31,82 @@ public class ProxyResource extends BaseBrick {
     public Reply<?> newProxy(Request request) throws Exception {
         LOG.info("POST /proxy");
 
-        String httpProxy = request.param("httpProxy");
-        this.logParam("httpProxy", httpProxy);
+        try {
+            String httpProxy = request.param("httpProxy");
+            this.logParam("httpProxy", httpProxy);
 
-        Hashtable<String, String> options = new Hashtable<String, String>();
-        if (httpProxy != null) {
-            options.put("httpProxy", httpProxy);
+            Hashtable<String, String> options = new Hashtable<String, String>();
+            if (httpProxy != null) {
+                options.put("httpProxy", httpProxy);
+            }
+
+            String paramPort = request.param("port");
+            this.logParam("port", paramPort);
+
+            int port = 0;
+            if (paramPort != null) {
+                port = Integer.parseInt(paramPort);
+                ProxyServer proxy = proxyManager.create(options, port);
+            } else {
+                ProxyServer proxy = proxyManager.create(options);
+                port = proxy.getPort();
+            }
+
+            return this.wrapSuccess(new ProxyDescriptor(port));
         }
-
-        String paramPort = request.param("port");
-        this.logParam("port", paramPort);
-        
-        int port = 0;
-        if (paramPort != null) {
-            port = Integer.parseInt(paramPort);
-            ProxyServer proxy = proxyManager.create(options, port);
-        } else {
-            ProxyServer proxy = proxyManager.create(options);
-            port = proxy.getPort();
+        catch (Exception e)
+        {
+            return this.wrapError(e.toString());
         }
-
-        return this.wrapSuccess(new ProxyDescriptor(port));
     }
 
     @Get
     @At("/:port/har")
     public Reply<?> getHar(@Named("port") int port) {
         LOG.info("GET /proxy/:port/har");
-        
-        ProxyServer proxy = proxyManager.get(port);
-        Har har = proxy.getHar();
 
-        return this.wrapSuccess(har);
+        try
+        {
+            ProxyServer proxy = proxyManager.get(port);
+            Har har = proxy.getHar();
+
+            return this.wrapSuccess(har);
+        }
+        catch (Exception e)
+        {
+            return this.wrapError(e.toString());
+        }
     }
 
     @Put
     @At("/:port/har")
     public Reply<?> newHar(@Named("port") int port, Request request) {
         LOG.info("PUT /proxy/:port/har");
-        
-        String initialPageRef = request.param("initialPageRef");
-        this.logParam("initialPageRef", initialPageRef);
-        ProxyServer proxy = proxyManager.get(port);
-        Har oldHar = proxy.newHar(initialPageRef);
 
-        String captureHeaders = request.param("captureHeaders");
-        this.logParam("captureHeaders", captureHeaders);
-        proxy.setCaptureHeaders(Boolean.parseBoolean(captureHeaders));
+        try
+        {
+            String initialPageRef = request.param("initialPageRef");
+            this.logParam("initialPageRef", initialPageRef);
+            ProxyServer proxy = proxyManager.get(port);
+            Har oldHar = proxy.newHar(initialPageRef);
 
-        String captureContent = request.param("captureContent");
-        this.logParam("captureContent", captureContent);
-        proxy.setCaptureContent(Boolean.parseBoolean(captureContent));
+            String captureHeaders = request.param("captureHeaders");
+            this.logParam("captureHeaders", captureHeaders);
+            proxy.setCaptureHeaders(Boolean.parseBoolean(captureHeaders));
 
-        if (oldHar != null) {
-            return this.wrapSuccess(oldHar);
-        } else {
-            return this.wrapEmptySuccess();
+            String captureContent = request.param("captureContent");
+            this.logParam("captureContent", captureContent);
+            proxy.setCaptureContent(Boolean.parseBoolean(captureContent));
+
+            if (oldHar != null) {
+                return this.wrapSuccess(oldHar);
+            } else {
+                return this.wrapEmptySuccess();
+            }
+        }
+        catch (Exception e)
+        {
+            return this.wrapError(e.toString());
         }
     }
 
@@ -95,31 +115,45 @@ public class ProxyResource extends BaseBrick {
     public Reply<?> setPage(@Named("port") int port, Request request) {
         LOG.info("PUT /proxy/:port/har/pageRef");
 
-        String pageRef = request.param("pageRef");
-        this.logParam("pageRef", pageRef);
-        
-        ProxyServer proxy = proxyManager.get(port);
-        proxy.newPage(pageRef);
+        try
+        {
+            String pageRef = request.param("pageRef");
+            this.logParam("pageRef", pageRef);
 
-        return this.wrapEmptySuccess();
+            ProxyServer proxy = proxyManager.get(port);
+            proxy.newPage(pageRef);
+
+            return this.wrapEmptySuccess();
+        }
+        catch (Exception e)
+        {
+            return this.wrapError(e.toString());
+        }
     }
 
     @Put
     @At("/:port/blacklist")
     public Reply<?> blacklist(@Named("port") int port, Request request) {
         LOG.info("PUT /proxy/:port/blacklist");
-        
-        String regex = request.param("regex");
-        this.logParam("regex", regex);
 
-        this.logParam("status", request.param("status"));
-        int responseCode = parseResponseCode(request.param("status"));
-        this.logParam("responseCode", responseCode);
+        try
+        {
+            String regex = request.param("regex");
+            this.logParam("regex", regex);
 
-        ProxyServer proxy = proxyManager.get(port);
-        proxy.blacklistRequests(regex, responseCode);
+            this.logParam("status", request.param("status"));
+            int responseCode = parseResponseCode(request.param("status"));
+            this.logParam("responseCode", responseCode);
 
-        return this.wrapEmptySuccess();
+            ProxyServer proxy = proxyManager.get(port);
+            proxy.blacklistRequests(regex, responseCode);
+
+            return this.wrapEmptySuccess();
+        }
+        catch (Exception e)
+        {
+            return this.wrapError(e.toString());
+        }
     }
 
     @Put
@@ -127,17 +161,24 @@ public class ProxyResource extends BaseBrick {
     public Reply<?> whitelist(@Named("port") int port, Request request) {
         LOG.info("PUT /proxy/:port/whitelist");
 
-        String regex = request.param("regex");
-        this.logParam("regex", regex);
+        try
+        {
+            String regex = request.param("regex");
+            this.logParam("regex", regex);
 
-        this.logParam("status", request.param("status"));
-        int responseCode = parseResponseCode(request.param("status"));
-        this.logParam("responseCode", responseCode);
-        
-        ProxyServer proxy = proxyManager.get(port);
-        proxy.whitelistRequests(regex.split(","), responseCode);
+            this.logParam("status", request.param("status"));
+            int responseCode = parseResponseCode(request.param("status"));
+            this.logParam("responseCode", responseCode);
 
-        return this.wrapEmptySuccess();
+            ProxyServer proxy = proxyManager.get(port);
+            proxy.whitelistRequests(regex.split(","), responseCode);
+
+            return this.wrapEmptySuccess();
+        }
+        catch (Exception e)
+        {
+            return this.wrapError(e.toString());
+        }
     }
 
     @Post
@@ -145,17 +186,24 @@ public class ProxyResource extends BaseBrick {
     public Reply<?> updateHeaders(@Named("port") int port, Request request) {
         LOG.info("POST /proxy/:port/headers");
 
-        ProxyServer proxy = proxyManager.get(port);
-        Map<String, String> headers = request.read(Map.class).as(Json.class);
-        for (Map.Entry<String, String> entry : headers.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-            this.logParam("HEADER NAME ", key);
-            this.logParam("HEADER VALUE", value);
-            proxy.addHeader(key, value);
-        }
+        try
+        {
+            ProxyServer proxy = proxyManager.get(port);
+            Map<String, String> headers = request.read(Map.class).as(Json.class);
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                this.logParam("HEADER NAME ", key);
+                this.logParam("HEADER VALUE", value);
+                proxy.addHeader(key, value);
+            }
 
-        return this.wrapEmptySuccess();
+            return this.wrapEmptySuccess();
+        }
+        catch (Exception e)
+        {
+            return this.wrapError(e.toString());
+        }
     }
 
     @Delete
@@ -163,10 +211,17 @@ public class ProxyResource extends BaseBrick {
     public Reply<?> removeAllHeaders(@Named("port") int port, Request request) {
         LOG.info("DELETE /proxy/%s/headers", port);
 
-        ProxyServer proxy = proxyManager.get(port);
-        proxy.removeAllHeaders();
+        try
+        {
+            ProxyServer proxy = proxyManager.get(port);
+            proxy.removeAllHeaders();
 
-        return this.wrapEmptySuccess();
+            return this.wrapEmptySuccess();
+        }
+        catch (Exception e)
+        {
+            return this.wrapError(e.toString());
+        }
     }
 
     @Get
@@ -174,8 +229,15 @@ public class ProxyResource extends BaseBrick {
     public Reply<?> getHeader(@Named("port") int port, @Named("name") String name, Request request) {
         LOG.info("GET /proxy/%s/header/%s", port, name);
 
-        ProxyServer proxy = proxyManager.get(port);
-        return this.wrapSuccess(proxy.getHeader(name));
+        try
+        {
+            ProxyServer proxy = proxyManager.get(port);
+            return this.wrapSuccess(proxy.getHeader(name));
+        }
+        catch (Exception e)
+        {
+            return this.wrapError(e.toString());
+        }
     }
 
     @Delete
@@ -183,41 +245,55 @@ public class ProxyResource extends BaseBrick {
     public Reply<?> removeHeader(@Named("port") int port, @Named("name") String name, Request request) {
         LOG.info("DELETE /proxy/%s/header/%s", port, name);
 
-        ProxyServer proxy = proxyManager.get(port);
-        proxy.removeHeader(name);
+        try
+        {
+            ProxyServer proxy = proxyManager.get(port);
+            proxy.removeHeader(name);
 
-        return this.wrapEmptySuccess();
+            return this.wrapEmptySuccess();
+        }
+        catch (Exception e)
+        {
+            return this.wrapError(e.toString());
+        }
     }
 
     @Put
     @At("/:port/limit")
     public Reply<?> limit(@Named("port") int port, Request request) {
         LOG.info("PUT /proxy/:port/limit");
-        
-        ProxyServer proxy = proxyManager.get(port);
-        String upstreamKbps = request.param("upstreamKbps");
-        this.logParam("upstreamKbps", upstreamKbps);
-        if (upstreamKbps != null) {
-            try {
-                proxy.setUpstreamKbps(Integer.parseInt(upstreamKbps));
-            } catch (NumberFormatException e) { }
-        }
-        String downstreamKbps = request.param("downstreamKbps");
-        this.logParam("downstreamKbps", downstreamKbps);
-        if (downstreamKbps != null) {
-            try {
-                proxy.setDownstreamKbps(Integer.parseInt(downstreamKbps));
-            } catch (NumberFormatException e) { }
-        }
-        String latency = request.param("latency");
-        this.logParam("latency", latency);
-        if (latency != null) {
-            try {
-                proxy.setLatency(Integer.parseInt(latency));
-            } catch (NumberFormatException e) { }
-        }
 
-        return this.wrapEmptySuccess();
+        try
+        {
+            ProxyServer proxy = proxyManager.get(port);
+            String upstreamKbps = request.param("upstreamKbps");
+            this.logParam("upstreamKbps", upstreamKbps);
+            if (upstreamKbps != null) {
+                try {
+                    proxy.setUpstreamKbps(Integer.parseInt(upstreamKbps));
+                } catch (NumberFormatException e) { }
+            }
+            String downstreamKbps = request.param("downstreamKbps");
+            this.logParam("downstreamKbps", downstreamKbps);
+            if (downstreamKbps != null) {
+                try {
+                    proxy.setDownstreamKbps(Integer.parseInt(downstreamKbps));
+                } catch (NumberFormatException e) { }
+            }
+            String latency = request.param("latency");
+            this.logParam("latency", latency);
+            if (latency != null) {
+                try {
+                    proxy.setLatency(Integer.parseInt(latency));
+                } catch (NumberFormatException e) { }
+            }
+
+            return this.wrapEmptySuccess();
+        }
+        catch (Exception e)
+        {
+            return this.wrapError(e.toString());
+        }
     }
 
     @Delete
@@ -225,30 +301,44 @@ public class ProxyResource extends BaseBrick {
     public Reply<?> delete(@Named("port") int port) throws Exception {
         LOG.info("DELETE /proxy/:port");
 
-        proxyManager.delete(port);
+        try
+        {
+            proxyManager.delete(port);
 
-        return this.wrapEmptySuccess();
+            return this.wrapEmptySuccess();
+        }
+        catch (Exception e)
+        {
+            return this.wrapError(e.toString());
+        }
     }
 
     @Post
     @At("/:port/hosts")
     public Reply<?> remapHosts(@Named("port") int port, Request request) {
         LOG.info("POST /proxy/:port/hosts");
-        
-        ProxyServer proxy = proxyManager.get(port);
-        @SuppressWarnings("unchecked") Map<String, String> headers = request.read(Map.class).as(Json.class);
 
-        for (Map.Entry<String, String> entry : headers.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-            this.logParam("HOST NAME ", key);
-            this.logParam("HOST VALUE", value);
-            proxy.remapHost(key, value);
-            proxy.setDNSCacheTimeout(0);
-            proxy.clearDNSCache();
+        try
+        {
+            ProxyServer proxy = proxyManager.get(port);
+            @SuppressWarnings("unchecked") Map<String, String> headers = request.read(Map.class).as(Json.class);
+
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                this.logParam("HOST NAME ", key);
+                this.logParam("HOST VALUE", value);
+                proxy.remapHost(key, value);
+                proxy.setDNSCacheTimeout(0);
+                proxy.clearDNSCache();
+            }
+
+            return this.wrapEmptySuccess();
         }
-
-        return this.wrapEmptySuccess();
+        catch (Exception e)
+        {
+            return this.wrapError(e.toString());
+        }
     }
 
     @Put
@@ -257,25 +347,32 @@ public class ProxyResource extends BaseBrick {
     {
         LOG.info("PUT /proxy/%s/basicAuth/%s", port, domain);
 
-        ProxyServer proxy = proxyManager.get(port);
-
-        String username = request.param("username");
-        this.logParam("username", username);
-        if (username == null)
+        try
         {
-            return this.wrapError("Missing param 'username'");
-        }
+            ProxyServer proxy = proxyManager.get(port);
 
-        String password = request.param("password");
-        this.logParam("password", password);
-        if (password == null)
+            String username = request.param("username");
+            this.logParam("username", username);
+            if (username == null)
+            {
+                return this.wrapError("Missing param 'username'");
+            }
+
+            String password = request.param("password");
+            this.logParam("password", password);
+            if (password == null)
+            {
+                return this.wrapError("Missing param 'password'");
+            }
+
+            proxy.autoBasicAuthorization(domain, username, password);
+
+            return this.wrapEmptySuccess();
+        }
+        catch (Exception e)
         {
-            return this.wrapError("Missing param 'password'");
+            return this.wrapError(e.toString());
         }
-
-        proxy.autoBasicAuthorization(domain, username, password);
-
-        return this.wrapEmptySuccess();
     }
 
     private int parseResponseCode(String response)
